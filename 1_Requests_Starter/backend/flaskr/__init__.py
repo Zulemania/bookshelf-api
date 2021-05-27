@@ -92,9 +92,28 @@ def create_app(test_config=None):
   #        Response body keys: 'success', 'deleted'(id of deleted book), 'books' and 'total_books'
   #        Response body keys: 'success', 'books' and 'total_books'
 
+  @app.route('/books/<int:book_id>', methods=['DELETE'])
+  def delete_book(book_id):
+    try:
+      book = Book.query.filter(Book.id == book_id).one_or_none()
+      if book is none:
+        abort(404)
+
+      book.delete()
+      selection = Book.query.order_by(Book.id).all()
+      current_books = paginate_books(request, selection)
+
+      return jsonify({
+        'success': True,
+        'deleted': book_id,
+        'books': current_books,
+        'total_books': len(Book.query.all())
+      })
+
+    except:
+      abort(422)
+
   
-
-
   # TEST: When completed, you will be able to delete a single book by clicking on the trashcan.
 
 
@@ -103,8 +122,4 @@ def create_app(test_config=None):
   # TEST: When completed, you will be able to a new book using the form. Try doing so from the last page of books. 
   #       Your new book should show up immediately after you submit it at the end of the page. 
   
-
-
   return app
-
-    
