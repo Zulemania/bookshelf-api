@@ -15,8 +15,8 @@ BOOKS_PER_SHELF = 8
 #   - If you change any of the response body keys, make sure you update the frontend to correspond. 
 def paginate_books(request, selection):
     page = request.args.get ('page', 1, type=int)
-    start= (page - 1) * 10
-    end = start + 10
+    start= (page - 1) * BOOKS_PER_SHELF
+    end = start + BOOKS_PER_SHELF
 
     books = [book.format() for book in selection]
     current_books = books[start:end]
@@ -34,7 +34,7 @@ def create_app(test_config=None):
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,')
     return response
 
   # @TODO: Write a route that retrivies all books, paginated. 
@@ -67,11 +67,12 @@ def create_app(test_config=None):
 
   @app.route('/books/<int:book_id>', methods=['PATCH'])
   def update_book(book_id):
+
     body = request.get_json()
 
     try:
       book = Book.query.filter(Book.id == book_id).one_or_none()
-      if book is none:
+      if book is None:
         abort(404)
 
       if 'rating' in body:
@@ -81,11 +82,11 @@ def create_app(test_config=None):
 
       return jsonify({
         "success": True,
-        'id': book_id
+        'id': book.id
       })
 
     except:
-      abort(404)
+      abort(400)
 
 
   # @TODO: Write a route that will delete a single book. 
@@ -96,6 +97,7 @@ def create_app(test_config=None):
   def delete_book(book_id):
     try:
       book = Book.query.filter(Book.id == book_id).one_or_none()
+
       if book is none:
         abort(404)
 
@@ -128,7 +130,7 @@ def create_app(test_config=None):
 
     new_title = body.get('title', None)
     new_author = body.get('author', None)
-    new_rating = body_get('reating', None)
+    new_rating = body.get('rating', None)
 
     try: 
       book = Book(title=new_title, author=new_author, rating=new_rating)
